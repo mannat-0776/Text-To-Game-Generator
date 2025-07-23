@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Text-to-Game Chat Generator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1 style="text-align:center; margin-bottom:24px;">Text-to-Game Chat Generator 🎮</h1>
+    <div id="chat-box">
+      <!-- Message rows will be appended here -->
+    </div>
+    <div style="display:flex; gap:10px;">
+      <textarea id="user-input" placeholder="Describe your game idea..." required></textarea>
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+  <script>
+    function addMessage(text, sender) {
+      const chatBox = document.getElementById('chat-box');
+      const messageRow = document.createElement('div');
+      messageRow.className = 'message-row';
+      if (sender === 'user') {
+        messageRow.style.justifyContent = 'flex-end';
+      }
+
+      const avatarSpan = document.createElement('span');
+      avatarSpan.className = 'avatar';
+      avatarSpan.textContent = sender === 'user' ? '🧑' : '🤖';
+
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender}`;
+      messageDiv.innerHTML = text;
+
+      messageRow.appendChild(avatarSpan);
+      messageRow.appendChild(messageDiv);
+      chatBox.appendChild(messageRow);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const inputElem = document.getElementById('user-input');
+      const input = inputElem.value.trim();
+      if (!input) return;
+      addMessage(input, 'user');
+      inputElem.value = '';
+      const response = await fetch('/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({message: input})
+      });
+      const data = await response.json();
+      addMessage(data.reply, 'bot');
+    }
+
+    // Optional: Focus textarea on page load
+    window.onload = () => document.getElementById('user-input').focus();
+  </script>
+</body>
+</html>
